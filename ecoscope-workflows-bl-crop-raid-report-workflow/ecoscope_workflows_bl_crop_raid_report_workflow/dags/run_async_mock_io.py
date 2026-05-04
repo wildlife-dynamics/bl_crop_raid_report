@@ -75,9 +75,6 @@ from ecoscope_workflows_ext_big_life.tasks import (
 from ecoscope_workflows_ext_big_life.tasks import (
     draw_custom_stacked_bar_chart as draw_custom_stacked_bar_chart,
 )
-from ecoscope_workflows_ext_big_life.tasks import (
-    extract_dt_attributes as extract_dt_attributes,
-)
 from ecoscope_workflows_ext_big_life.tasks import filter_color_map as filter_color_map
 from ecoscope_workflows_ext_big_life.tasks import (
     generate_crop_raid_report as generate_crop_raid_report,
@@ -102,6 +99,9 @@ from ecoscope_workflows_ext_custom.tasks.results import (
     create_scatterplot_layer as create_scatterplot_layer,
 )
 from ecoscope_workflows_ext_custom.tasks.results import draw_map as draw_map
+from ecoscope_workflows_ext_custom.tasks.transformation import (
+    decompose_datetime as decompose_datetime,
+)
 from ecoscope_workflows_ext_custom.tasks.transformation import (
     drop_column_prefix as drop_column_prefix,
 )
@@ -1009,15 +1009,6 @@ def main(params: Params):
                     "event_type",
                     "reported_by",
                     "event_type_display",
-                    "Additional information",
-                    "Area",
-                    "Deterrent methods used",
-                    "GPS Accuracy",
-                    "Partners present",
-                    "Secondary crop destroyed",
-                    "Secondary species responsible",
-                    "Sector",
-                    "Teams involved",
                 ],
                 "raise_if_not_found": True,
             }
@@ -1075,7 +1066,7 @@ def main(params: Params):
             method="call",
         ),
         "extract_date": Node(
-            async_task=extract_dt_attributes.validate()
+            async_task=decompose_datetime.validate()
             .set_task_instance_id("extract_date")
             .handle_errors()
             .with_tracing()
@@ -1089,14 +1080,14 @@ def main(params: Params):
             .set_executor("lithops"),
             partial={
                 "df": DependsOn("convert_col_int"),
-                "time_column": "Date and time of raid",
-                "attributes": [
+                "datetime_column": "Date and time of raid",
+                "components": [
                     "month",
                     "month_name",
                     "hour",
                 ],
-                "column_prefix": "ts_",
-                "tz": None,
+                "column_prefix": "ts",
+                "remove_source": False,
             }
             | (params_dict.get("extract_date") or {}),
             method="call",

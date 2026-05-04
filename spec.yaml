@@ -345,15 +345,6 @@ workflow:
         "event_type", 
         "reported_by",
         "event_type_display",
-        "Additional information", 
-        "Area",
-        "Deterrent methods used",
-        "GPS Accuracy",
-        "Partners present",	
-        "Secondary crop destroyed", 
-        "Secondary species responsible",
-        "Sector",
-        "Teams involved"
         ]
       retain_columns: []
       rename_columns: {}
@@ -381,13 +372,13 @@ workflow:
       
   - name: Extract date attributes 
     id: extract_date
-    task: extract_dt_attributes
+    task: decompose_datetime
     partial: 
       df: ${{ workflow.convert_col_int.return }}
-      time_column: "Date and time of raid"
-      attributes: ["month","month_name","hour"]
-      column_prefix: "ts_"
-      tz: null 
+      datetime_column: "Date and time of raid"
+      components: ["month","month_name","hour"]
+      column_prefix: "ts"
+      remove_source: false
 
   - name: Assign custom time bins 
     id: assign_custom_bins 

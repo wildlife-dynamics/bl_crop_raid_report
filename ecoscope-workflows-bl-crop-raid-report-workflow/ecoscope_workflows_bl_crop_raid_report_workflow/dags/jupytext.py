@@ -47,9 +47,6 @@ from ecoscope_workflows_ext_big_life.tasks import (
 from ecoscope_workflows_ext_big_life.tasks import (
     draw_custom_stacked_bar_chart as draw_custom_stacked_bar_chart,
 )
-from ecoscope_workflows_ext_big_life.tasks import (
-    extract_dt_attributes as extract_dt_attributes,
-)
 from ecoscope_workflows_ext_big_life.tasks import filter_color_map as filter_color_map
 from ecoscope_workflows_ext_big_life.tasks import (
     generate_crop_raid_report as generate_crop_raid_report,
@@ -83,6 +80,9 @@ from ecoscope_workflows_ext_custom.tasks.results import (
 )
 from ecoscope_workflows_ext_custom.tasks.spatial_ops import (
     reproject_gdf as reproject_gdf,
+)
+from ecoscope_workflows_ext_custom.tasks.transformation import (
+    decompose_datetime as decompose_datetime,
 )
 from ecoscope_workflows_ext_custom.tasks.transformation import (
     drop_column_prefix as drop_column_prefix,
@@ -1039,15 +1039,6 @@ map_crop_columns = (
             "event_type",
             "reported_by",
             "event_type_display",
-            "Additional information",
-            "Area",
-            "Deterrent methods used",
-            "GPS Accuracy",
-            "Partners present",
-            "Secondary crop destroyed",
-            "Secondary species responsible",
-            "Sector",
-            "Teams involved",
         ],
         retain_columns=[],
         rename_columns={},
@@ -1141,7 +1132,7 @@ extract_date_params = dict()
 
 
 extract_date = (
-    extract_dt_attributes.set_task_instance_id("extract_date")
+    decompose_datetime.set_task_instance_id("extract_date")
     .handle_errors()
     .with_tracing()
     .skipif(
@@ -1153,10 +1144,10 @@ extract_date = (
     )
     .partial(
         df=convert_col_int,
-        time_column="Date and time of raid",
-        attributes=["month", "month_name", "hour"],
-        column_prefix="ts_",
-        tz=None,
+        datetime_column="Date and time of raid",
+        components=["month", "month_name", "hour"],
+        column_prefix="ts",
+        remove_source=False,
         **extract_date_params,
     )
     .call()
